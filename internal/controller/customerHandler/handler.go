@@ -1,6 +1,7 @@
 package customerhandler
 
 import (
+	"Mobile/internal/controller"
 	"Mobile/internal/model/customer"
 	"Mobile/internal/service"
 	"net/http"
@@ -10,10 +11,7 @@ import (
 )
 
 type CustomerHandler interface {
-	Register(echo.Context) error
-	Delete(echo.Context) error
-	Update(echo.Context) error
-	Get(echo.Context) error
+	controller.Handler
 
 	AddFavorite(echo.Context) error
 }
@@ -28,7 +26,7 @@ func NewCustomerHandler(customerService service.CustomerService) CustomerHandler
 	}
 }
 
-func (ref handlerImpl) Register(c echo.Context) error {
+func (ref handlerImpl) Post(c echo.Context) error {
 	var newCustomer customer.Customer
 	if err := c.Bind(&newCustomer); err != nil {
 		log.Err(err).Msg("error binding customer")
@@ -38,7 +36,7 @@ func (ref handlerImpl) Register(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	if err := ref.customerService.Add(&newCustomer); err != nil {
+	if err := ref.customerService.Add(c.Request().Context(), &newCustomer); err != nil {
 		log.Err(err.Unwrap()).Msg("error at customer service")
 		return c.NoContent(err.Code)
 	}
@@ -54,16 +52,23 @@ func (ref handlerImpl) Delete(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	if err := ref.customerService.Delete(customerId); err != nil {
+	if err := ref.customerService.Delete(c.Request().Context(), customerId); err != nil {
 		log.Err(err.Unwrap()).Msg("error deleting customer")
 		return c.NoContent(err.Code)
 	}
 
 	return c.NoContent(http.StatusOK)
 }
-func (ref handlerImpl) Update(c echo.Context) error {
+func (ref handlerImpl) Put(c echo.Context) error {
 
 	var customer customer.Customer
+
+	customer.Document = c.Param("document")
+	if customer.Document == "" {
+		log.Warn().Msg("no param provided")
+		return c.NoContent(http.StatusBadRequest)
+	}
+
 	if err := c.Bind(&customer); err != nil {
 		log.Err(err).Msg("error binding customer on update")
 		if httpErr := err.(*echo.HTTPError); httpErr != nil {
@@ -72,7 +77,7 @@ func (ref handlerImpl) Update(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	if err := ref.customerService.Update(&customer); err != nil {
+	if err := ref.customerService.Update(c.Request().Context(), &customer); err != nil {
 		log.Err(err.Unwrap()).Msg("error updating customer")
 		return c.NoContent(err.Code)
 	}
@@ -87,7 +92,7 @@ func (ref handlerImpl) Get(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	customer, err := ref.customerService.Get(customerId)
+	customer, err := ref.customerService.Get(c.Request().Context(), customerId)
 	if err != nil {
 		log.Err(err.Unwrap()).Msg("error returning customer")
 		return c.NoContent(err.Code)
@@ -98,7 +103,7 @@ func (ref handlerImpl) Get(c echo.Context) error {
 
 func (ref handlerImpl) AddFavorite(c echo.Context) error {
 
-	customerId := c.FormValue("customer_id")
+	customerId := c.Param("customer_id")
 	providerId := c.FormValue("provider_id")
 
 	if providerId == "" || customerId == "" {
@@ -106,7 +111,7 @@ func (ref handlerImpl) AddFavorite(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	if err := ref.customerService.AddFavorite(customerId, providerId); err != nil {
+	if err := ref.customerService.AddFavorite(c.Request().Context(), customerId, providerId); err != nil {
 		log.Err(err.Unwrap()).Msg("error adding provider to customer's favorite")
 		return c.NoContent(err.Code)
 	}

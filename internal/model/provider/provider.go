@@ -33,5 +33,6 @@ type Provider struct {
 
 	Specialties []Specialty `json:"specialty"`
 
-	ContactType Contact `json:"contact_type"`
+	ContactType    Contact `json:"contact_type"`
+	ContactAddress string  `json:"contact_address"`
 }

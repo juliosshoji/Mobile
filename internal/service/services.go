@@ -4,30 +4,34 @@ import (
 	"Mobile/internal/model/customer"
 	"Mobile/internal/model/provider"
 	"Mobile/internal/model/review"
+	"context"
 
 	"github.com/labstack/echo/v4"
 )
 
 type CustomerService interface {
-	Get(string) (*customer.Customer, *echo.HTTPError)
-	Update(*customer.Customer) *echo.HTTPError
-	Delete(string) *echo.HTTPError
-	Add(*customer.Customer) *echo.HTTPError
+	Get(context.Context, string) (*customer.Customer, *echo.HTTPError)
+	Update(context.Context, *customer.Customer) *echo.HTTPError
+	Delete(context.Context, string) *echo.HTTPError
+	Add(context.Context, *customer.Customer) *echo.HTTPError
 
-	AddFavorite(string, string) *echo.HTTPError
+	AddFavorite(context.Context, string, string) *echo.HTTPError
 }
 
 type ProviderService interface {
-	Get(string) *provider.Provider
-	Update(*provider.Provider) *echo.HTTPError
-	Delete(string) *echo.HTTPError
-	Add(*provider.Provider) *echo.HTTPError
+	Get(context.Context, string) (*provider.Provider, *echo.HTTPError)
+	Update(context.Context, *provider.Provider) *echo.HTTPError
+	Delete(context.Context, string) *echo.HTTPError
+	Add(context.Context, *provider.Provider) *echo.HTTPError
 
-	AddSpecialty(provider.Specialty, string) *echo.HTTPError
+	AddSpecialty(context.Context, *provider.Specialty, string) *echo.HTTPError
+	GetBySpecialty(context.Context, *provider.Specialty) (*[]provider.Provider, *echo.HTTPError)
 }
 
 type ReviewService interface {
-	Create(*review.Review) *echo.HTTPError
-	Delete(string) *echo.HTTPError
-	Get(string) *review.Review
+	Create(context.Context, *review.Review) *echo.HTTPError
+	Delete(context.Context, string) *echo.HTTPError
+	Get(context.Context, string) (*review.Review, *echo.HTTPError)
+
+	GetAllBy(context.Context, string, string) (*[]review.Review, *echo.HTTPError)
 }

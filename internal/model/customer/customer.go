@@ -1,9 +1,9 @@
 package customer
 
 type Customer struct {
-	Document string
-	Name     string
-	Birthday string
+	Document string `json:"document"`
+	Name     string `json:"name"`
+	Birthday string `json:"birthday"`
 
-	Favorites []string //list of document of favorite providers
+	Favorites []string `json:"favorites"` //list of document of favorite providers
 }
