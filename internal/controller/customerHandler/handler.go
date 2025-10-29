@@ -103,15 +103,26 @@ func (ref handlerImpl) Get(c echo.Context) error {
 
 func (ref handlerImpl) AddFavorite(c echo.Context) error {
 
-	customerId := c.Param("customer_id")
-	providerId := c.FormValue("provider_id")
+	type AddFavoriteRequest struct {
+		ProviderID string `json:"provider_id"`
+	}
 
-	if providerId == "" || customerId == "" {
-		log.Error().Msg("parameters are incomplete (customer: " + customerId + ") (provider: " + providerId + ")")
+	customerId := c.Param("customer_id")
+	var request AddFavoriteRequest
+	if err := c.Bind(&request); err != nil {
+		log.Error().Err(err).Msg("error binding add favorite request")
+		if httpErr := err.(*echo.HTTPError); httpErr != nil {
+			return c.NoContent(httpErr.Code)
+		}
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	if err := ref.customerService.AddFavorite(c.Request().Context(), customerId, providerId); err != nil {
+	if request.ProviderID == "" || customerId == "" {
+		log.Error().Msg("parameters are incomplete (customer: " + customerId + ") (provider: " + request.ProviderID + ")")
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	if err := ref.customerService.AddFavorite(c.Request().Context(), customerId, request.ProviderID); err != nil {
 		log.Err(err.Unwrap()).Msg("error adding provider to customer's favorite")
 		return c.NoContent(err.Code)
 	}

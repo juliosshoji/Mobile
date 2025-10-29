@@ -62,8 +62,10 @@ func (ref providerHandlerImpl) Get(c echo.Context) error {
 	return c.JSON(http.StatusOK, customer)
 }
 func (ref providerHandlerImpl) Put(c echo.Context) error {
-	var customer provider.Provider
-	if err := c.Bind(&customer); err != nil {
+	var provider provider.Provider
+	provider.Document = c.Param("document")
+
+	if err := c.Bind(&provider); err != nil {
 		log.Err(err).Msg("error binding provider on update")
 		if httpErr := err.(*echo.HTTPError); httpErr != nil {
 			return c.NoContent(httpErr.Code)
@@ -71,7 +73,7 @@ func (ref providerHandlerImpl) Put(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	if err := ref.providerService.Update(c.Request().Context(), &customer); err != nil {
+	if err := ref.providerService.Update(c.Request().Context(), &provider); err != nil {
 		log.Err(err.Unwrap()).Msg("error updating provider")
 		return c.NoContent(err.Code)
 	}
@@ -109,9 +111,13 @@ func (ref providerHandlerImpl) GetContact(c echo.Context) error {
 }
 func (ref providerHandlerImpl) AddSpecialty(c echo.Context) error {
 
-	var specialty provider.Specialty
-	if err := c.Bind(&specialty); err != nil {
-		log.Err(err).Msg("error binding customer")
+	type AddSpecialtyObject struct {
+		Specialty string `json:"specialty"`
+	}
+
+	var requestBody AddSpecialtyObject
+	if err := c.Bind(&requestBody); err != nil {
+		log.Err(err).Msg("error binding speialty")
 		if httpErr := err.(*echo.HTTPError); httpErr != nil {
 			return c.NoContent(httpErr.Code)
 		}
@@ -123,6 +129,8 @@ func (ref providerHandlerImpl) AddSpecialty(c echo.Context) error {
 		log.Warn().Msg("no param provided")
 		return c.NoContent(http.StatusBadRequest)
 	}
+
+	specialty := provider.Specialty(requestBody.Specialty)
 
 	if err := ref.providerService.AddSpecialty(c.Request().Context(), &specialty, providerDocument); err != nil {
 		log.Err(err.Unwrap()).Msg("error at customer service")

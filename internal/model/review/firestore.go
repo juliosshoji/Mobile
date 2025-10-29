@@ -45,14 +45,12 @@ func (ref reviewRepositoryImpl) Get(ctx context.Context, document string) (*Revi
 }
 func (ref reviewRepositoryImpl) Save(ctx context.Context, review *Review) *echo.HTTPError {
 	docRef := ref.database.Collection(collection).NewDoc()
-	if _, err := docRef.Create(ctx, review); err != nil {
+
+	review.Id = docRef.ID
+
+	if _, err := docRef.Set(ctx, review); err != nil {
 		log.Error().Err(err).Msg("error creating document in firestore")
 		return &echo.HTTPError{Internal: err, Message: "error creating document", Code: http.StatusInternalServerError}
-	}
-
-	if _, err := docRef.Create(ctx, review); err != nil {
-		log.Error().Err(err).Msg("could not create document for review")
-		return &echo.HTTPError{Internal: err, Message: "could not create document for review", Code: http.StatusInternalServerError}
 	}
 
 	log.Info().Msg("new review created")

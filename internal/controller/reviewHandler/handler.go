@@ -42,7 +42,7 @@ func (ref reviewHandlerImpl) Post(c echo.Context) error {
 		return c.NoContent(err.Code)
 	}
 
-	return c.NoContent(http.StatusAccepted)
+	return c.JSON(http.StatusAccepted, review)
 }
 
 func (ref reviewHandlerImpl) Get(c echo.Context) error {
@@ -77,13 +77,13 @@ func (ref reviewHandlerImpl) Delete(c echo.Context) error {
 }
 
 func (ref reviewHandlerImpl) GetAllBy(c echo.Context) error {
-	option := c.QueryParam("option")
+	option := c.Param("option")
 	if option == "" {
 		log.Warn().Msg("no option param provided")
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	id := c.QueryParam("id")
+	id := c.Param("id")
 	if id == "" {
 		log.Warn().Msg("no id param provided")
 		return c.NoContent(http.StatusBadRequest)
