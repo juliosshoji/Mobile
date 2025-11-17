@@ -18,11 +18,11 @@ import (
 )
 
 func main() {
-	logFileName := os.Getenv("LOG_FILE")
-	if logFileName == "" {
-		log.Fatal().Msg("LOG_FILE environment variable not set")
-		return
-	}
+	// logFileName := os.Getenv("LOG_FILE")
+	// if logFileName == "" {
+	// 	log.Fatal().Msg("LOG_FILE environment variable not set")
+	// 	return
+	// }
 
 	port := os.Getenv("PORT")
 	if port == "" {
