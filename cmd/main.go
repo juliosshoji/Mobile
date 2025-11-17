@@ -24,7 +24,7 @@ func main() {
 		return
 	}
 
-	port := os.Getenv("HOST")
+	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal().Msg("HOST environment variable not set")
 		return
