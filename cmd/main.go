@@ -29,6 +29,10 @@ func main() {
 		log.Fatal().Msg("HOST environment variable not set")
 		return
 	}
+
+	if port[0] != ':' {
+		port = ":" + port
+	}
 	log.Info().Msg("port assigned is: " + port)
 
 	// logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
@@ -47,12 +51,15 @@ func main() {
 	// zerolog.TimeFieldFormat = time.RFC3339Nano
 	// zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
-	gcproject := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	gcproject := os.Getenv("GOOGLE_CLOUD_PROJECT_ID")
 	if gcproject == "" {
-		log.Fatal().Msg("GOOGLE_CLOUD_PROJECT environment variable not set")
-		return
+		// Fallback for local testing (you can set GOOGLE_CLOUD_PROJECT locally)
+		gcproject = os.Getenv("GOOGLE_CLOUD_PROJECT")
+		if gcproject == "" {
+			log.Fatal().Msg("GOOGLE_CLOUD_PROJECT_ID or GOOGLE_CLOUD_PROJECT env var not set")
+			return
+		}
 	}
-
 	ctx := context.Background()
 	defer ctx.Done()
 
