@@ -56,8 +56,7 @@ func main() {
 		// Fallback for local testing (you can set GOOGLE_CLOUD_PROJECT locally)
 		gcproject = os.Getenv("GOOGLE_CLOUD_PROJECT")
 		if gcproject == "" {
-			log.Fatal().Msg("GOOGLE_CLOUD_PROJECT_ID or GOOGLE_CLOUD_PROJECT env var not set")
-			return
+			log.Warn().Msg("GOOGLE_CLOUD_PROJECT_ID or GOOGLE_CLOUD_PROJECT env var not set")
 		}
 	}
 	ctx := context.Background()
