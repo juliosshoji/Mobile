@@ -10,10 +10,12 @@ import (
 	"Mobile/internal/model/review"
 	"Mobile/internal/service"
 	"context"
+	"net/http"
 	"os"
 
 	"cloud.google.com/go/firestore"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog/log"
 )
 
@@ -88,6 +90,11 @@ func InitializeServer(client *firestore.Client, port string) error {
 	reviewHandler := reviewHandler.NewReviewHandler(reviewService)
 
 	echo := echo.New()
+
+	echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+	}))
 
 	apiGroup := echo.Group("/v1")
 
