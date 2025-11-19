@@ -14,6 +14,7 @@ type CustomerHandler interface {
 	controller.Handler
 
 	AddFavorite(echo.Context) error
+	GetFavorite(echo.Context) error
 }
 
 type handlerImpl struct {
@@ -107,7 +108,7 @@ func (ref handlerImpl) AddFavorite(c echo.Context) error {
 		ProviderID string `json:"provider_id"`
 	}
 
-	customerId := c.Param("customer_id")
+	customerId := c.Param("document")
 	var request AddFavoriteRequest
 	if err := c.Bind(&request); err != nil {
 		log.Error().Err(err).Msg("error binding add favorite request")
@@ -128,4 +129,21 @@ func (ref handlerImpl) AddFavorite(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func (ref handlerImpl) GetFavorite(c echo.Context) error {
+	customerId := c.Param("document")
+	if customerId == "" {
+		log.Warn().Msg("no param provided")
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	favorites, err := ref.customerService.GetFavorite(c.Request().Context(), customerId)
+	if err != nil {
+		log.Err(err.Unwrap()).Msg("error getting customer's favorite")
+		return c.NoContent(err.Code)
+
+	}
+
+	return c.JSON(http.StatusOK, *favorites)
 }

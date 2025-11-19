@@ -2,6 +2,7 @@ package main
 
 import (
 	"Mobile/internal/controller"
+	"Mobile/internal/controller/authenticationHandler"
 	customerhandler "Mobile/internal/controller/customerHandler"
 	"Mobile/internal/controller/providerHandler"
 	"Mobile/internal/controller/reviewHandler"
@@ -82,14 +83,16 @@ func InitializeServer(client *firestore.Client, port string) error {
 	providerRepository := provider.NewProviderRepository(client)
 	reviewRepository := review.NewReviewRepository(client)
 
-	customerService := service.NewCustomerService(customerRepository)
 	providerService := service.NewProviderService(providerRepository)
+	customerService := service.NewCustomerService(customerRepository, providerService)
 	reviewService := service.NewReviewService(reviewRepository)
 	authorizationService := service.NewAuthorizationService()
+	authenticationService := service.NewAuthenticationService(providerRepository, customerRepository)
 
 	customerHandler := customerhandler.NewCustomerHandler(customerService)
 	providerHandler := providerHandler.NewProviderHandler(providerService)
 	reviewHandler := reviewHandler.NewReviewHandler(reviewService)
+	authenticationHandler := authenticationHandler.NewAuthenticationHandler(authenticationService)
 
 	echo := echo.New()
 
@@ -102,22 +105,25 @@ func InitializeServer(client *firestore.Client, port string) error {
 
 	apiGroup := echo.Group("/v1")
 
-	DefineRoutes(apiGroup, customerHandler, providerHandler, reviewHandler, authMiddleware)
+	DefineRoutes(apiGroup, authenticationHandler, customerHandler, providerHandler, reviewHandler, authMiddleware)
 
 	return controller.NewServer(echo, port)
 }
 
-func DefineRoutes(group *echo.Group, customerHandler customerhandler.CustomerHandler, providerHandler providerHandler.ProviderHandler, reviewHandler reviewHandler.ReviewHandler, authMiddleware middlewares.AuthMiddleware) {
+func DefineRoutes(group *echo.Group, authenticationHandler authenticationHandler.AuthenticationHandler, customerHandler customerhandler.CustomerHandler, providerHandler providerHandler.ProviderHandler, reviewHandler reviewHandler.ReviewHandler, authMiddleware middlewares.AuthMiddleware) {
+	group.POST("/login", authenticationHandler.Authenticate)
+
 	customersGroup := group.Group("/customers")
-	customersGroup.Use(authMiddleware.AuthorizeCustomerMiddleware)
+	customersGroup.Use(authMiddleware.AuthorizeMiddleware)
 	customersGroup.POST("", customerHandler.Post)
 	customersGroup.GET("/:document", customerHandler.Get)
 	customersGroup.PUT("/:document", customerHandler.Put)
 	customersGroup.DELETE("/:document", customerHandler.Delete)
-	customersGroup.PUT("/:document", customerHandler.AddFavorite)
+	customersGroup.PUT("/favorite/:document", customerHandler.AddFavorite)
+	customersGroup.GET("/favorite/:document", customerHandler.GetFavorite)
 
 	providersGroup := group.Group("/providers")
-	providersGroup.Use(authMiddleware.AuthorizeProviderMiddleware)
+	providersGroup.Use(authMiddleware.AuthorizeMiddleware)
 	providersGroup.POST("", providerHandler.Post)
 	providersGroup.GET("/:document", providerHandler.Get)
 	providersGroup.PUT("/:document", providerHandler.Put)

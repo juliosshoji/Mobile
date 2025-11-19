@@ -17,6 +17,7 @@ type CustomerService interface {
 	Add(context.Context, *customer.Customer) *echo.HTTPError
 
 	AddFavorite(context.Context, string, string) *echo.HTTPError
+	GetFavorite(context.Context, string) (*[]provider.Provider, *echo.HTTPError)
 }
 
 type ProviderService interface {
