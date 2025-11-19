@@ -54,9 +54,7 @@ func (ref authenticationServiceImpl) AuthenticateCustomer(ctx context.Context, d
 	if err != nil {
 		return nil, err
 	}
-
-	encodedPassword := sha256.Sum256([]byte(customerData.Password))
-	if password != fmt.Sprintf("%x", encodedPassword) {
+	if password != customerData.Password {
 		return nil, &echo.HTTPError{Message: "invalid credentials", Code: 401}
 	}
 
