@@ -5,6 +5,7 @@ import (
 	customerhandler "Mobile/internal/controller/customerHandler"
 	"Mobile/internal/controller/providerHandler"
 	"Mobile/internal/controller/reviewHandler"
+	"Mobile/internal/middlewares"
 	"Mobile/internal/model/customer"
 	"Mobile/internal/model/provider"
 	"Mobile/internal/model/review"
@@ -84,6 +85,7 @@ func InitializeServer(client *firestore.Client, port string) error {
 	customerService := service.NewCustomerService(customerRepository)
 	providerService := service.NewProviderService(providerRepository)
 	reviewService := service.NewReviewService(reviewRepository)
+	authorizationService := service.NewAuthorizationService()
 
 	customerHandler := customerhandler.NewCustomerHandler(customerService)
 	providerHandler := providerHandler.NewProviderHandler(providerService)
@@ -96,26 +98,32 @@ func InitializeServer(client *firestore.Client, port string) error {
 		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 	}))
 
+	authMiddleware := middlewares.NewUserAuthMiddleware(providerService, customerService, authorizationService)
+
 	apiGroup := echo.Group("/v1")
 
-	DefineRoutes(apiGroup, customerHandler, providerHandler, reviewHandler)
+	DefineRoutes(apiGroup, customerHandler, providerHandler, reviewHandler, authMiddleware)
 
 	return controller.NewServer(echo, port)
 }
 
-func DefineRoutes(group *echo.Group, customerHandler customerhandler.CustomerHandler, providerHandler providerHandler.ProviderHandler, reviewHandler reviewHandler.ReviewHandler) {
-	group.POST("/customers", customerHandler.Post)
-	group.GET("/customers/:document", customerHandler.Get)
-	group.PUT("/customers/:document", customerHandler.Put)
-	group.DELETE("/customers/:document", customerHandler.Delete)
-	group.PUT("/customers/:customer_id", customerHandler.AddFavorite)
+func DefineRoutes(group *echo.Group, customerHandler customerhandler.CustomerHandler, providerHandler providerHandler.ProviderHandler, reviewHandler reviewHandler.ReviewHandler, authMiddleware middlewares.AuthMiddleware) {
+	customersGroup := group.Group("/customers")
+	customersGroup.Use(authMiddleware.AuthorizeCustomerMiddleware)
+	customersGroup.POST("", customerHandler.Post)
+	customersGroup.GET("/:document", customerHandler.Get)
+	customersGroup.PUT("/:document", customerHandler.Put)
+	customersGroup.DELETE("/:document", customerHandler.Delete)
+	customersGroup.PUT("/:document", customerHandler.AddFavorite)
 
-	group.POST("/providers", providerHandler.Post)
-	group.GET("/providers/:document", providerHandler.Get)
-	group.PUT("/providers/:document", providerHandler.Put)
-	group.DELETE("/providers/:document", providerHandler.Delete)
-	group.PUT("/providers/specialty/:document", providerHandler.AddSpecialty)
-	group.GET("/providers/specialty/:specialty", providerHandler.GetBySpecialty)
+	providersGroup := group.Group("/providers")
+	providersGroup.Use(authMiddleware.AuthorizeProviderMiddleware)
+	providersGroup.POST("", providerHandler.Post)
+	providersGroup.GET("/:document", providerHandler.Get)
+	providersGroup.PUT("/:document", providerHandler.Put)
+	providersGroup.DELETE("/:document", providerHandler.Delete)
+	providersGroup.PUT("/:document", providerHandler.AddSpecialty)
+	group.GET("/specialty/:specialty", providerHandler.GetBySpecialty)
 
 	group.POST("/reviews", reviewHandler.Post)
 	group.GET("/reviews/:id", reviewHandler.Get)
