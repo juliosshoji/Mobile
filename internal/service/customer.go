@@ -2,20 +2,24 @@ package service
 
 import (
 	"Mobile/internal/model/customer"
+	"Mobile/internal/model/provider"
 	"context"
 	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog/log"
 )
 
 type customerServiceImpl struct {
-	repository customer.CustomerRepository
+	repository      customer.CustomerRepository
+	providerService ProviderService
 }
 
-func NewCustomerService(repo customer.CustomerRepository) CustomerService {
+func NewCustomerService(repo customer.CustomerRepository, providerService ProviderService) CustomerService {
 	return customerServiceImpl{
-		repository: repo,
+		repository:      repo,
+		providerService: providerService,
 	}
 }
 
@@ -89,4 +93,24 @@ func (ref customerServiceImpl) AddFavorite(ctx context.Context, customerDoc stri
 		return err
 	}
 	return nil
+}
+
+func (ref customerServiceImpl) GetFavorite(ctx context.Context, customerDoc string) (*[]provider.Provider, *echo.HTTPError) {
+	customer, err := ref.repository.Get(ctx, customerDoc)
+	if err != nil {
+		return nil, err
+	}
+
+	var favoriteProviders []provider.Provider
+	for _, providerDoc := range customer.Favorites {
+		log.Debug().Msg("Fetching provider: " + providerDoc)
+		prov, err := ref.providerService.Get(ctx, providerDoc)
+		if err != nil {
+			return nil, err
+		}
+
+		favoriteProviders = append(favoriteProviders, *prov)
+	}
+
+	return &favoriteProviders, nil
 }
