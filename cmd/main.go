@@ -115,7 +115,7 @@ func DefineRoutes(group *echo.Group, authenticationHandler authenticationHandler
 
 	customersGroup := group.Group("/customers")
 	customersGroup.Use(authMiddleware.AuthorizeMiddleware)
-	customersGroup.POST("", customerHandler.Post)
+	group.POST("/customers", customerHandler.Post)
 	customersGroup.GET("/:document", customerHandler.Get)
 	customersGroup.PUT("/:document", customerHandler.Put)
 	customersGroup.DELETE("/:document", customerHandler.Delete)
