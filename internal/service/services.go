@@ -28,6 +28,7 @@ type ProviderService interface {
 
 	AddSpecialty(context.Context, *provider.Specialty, string) *echo.HTTPError
 	GetBySpecialty(context.Context, *provider.Specialty) (*[]provider.Provider, *echo.HTTPError)
+	AddProfilePhoto(context.Context, string, string) *echo.HTTPError
 }
 
 type ReviewService interface {

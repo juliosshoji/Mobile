@@ -38,4 +38,6 @@ type Provider struct {
 
 	ContactType    Contact `json:"contact_type"`
 	ContactAddress string  `json:"contact_address"`
+
+	ProfilePhoto string `json:"profile_photo"`
 }

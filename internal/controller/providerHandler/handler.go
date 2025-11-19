@@ -16,6 +16,7 @@ type ProviderHandler interface {
 	GetContact(echo.Context) error
 	AddSpecialty(echo.Context) error
 	GetBySpecialty(echo.Context) error
+	AddProfilePhoto(c echo.Context) error
 }
 
 type providerHandlerImpl struct {
@@ -160,4 +161,20 @@ func (ref providerHandlerImpl) GetBySpecialty(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, providers)
+}
+
+func (ref providerHandlerImpl) AddProfilePhoto(c echo.Context) error {
+	providerDoc := c.Param(":document")
+	if providerDoc == "" {
+		log.Warn().Msg("no param provided")
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	file := c.FormValue("profile_photo")
+	if err := ref.providerService.AddProfilePhoto(c.Request().Context(), providerDoc, file); err != nil {
+		log.Err(err.Unwrap()).Msg("error adding profile photo")
+		return c.NoContent(err.Code)
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "profile photo added successfully"})
 }

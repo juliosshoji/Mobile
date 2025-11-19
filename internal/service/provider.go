@@ -137,3 +137,17 @@ func (ref providerServiceImpl) GetBySpecialty(ctx context.Context, specialty *pr
 
 	return &filteredProviders, nil
 }
+
+func (ref providerServiceImpl) AddProfilePhoto(ctx context.Context, providerDocument string, photoData string) *echo.HTTPError {
+	provider, err := ref.repository.Get(ctx, providerDocument)
+	if err != nil {
+		return nil
+	}
+	provider.ProfilePhoto = photoData
+
+	if err := ref.repository.Update(ctx, provider); err != nil {
+		return nil
+	}
+
+	return nil
+}

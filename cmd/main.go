@@ -129,6 +129,7 @@ func DefineRoutes(group *echo.Group, authenticationHandler authenticationHandler
 	providersGroup.PUT("/:document", providerHandler.Put)
 	providersGroup.DELETE("/:document", providerHandler.Delete)
 	providersGroup.PUT("/:document", providerHandler.AddSpecialty)
+	providersGroup.POST("/profile_photo/:document", providerHandler.AddProfilePhoto)
 	group.GET("/specialty/:specialty", providerHandler.GetBySpecialty)
 
 	group.POST("/reviews", reviewHandler.Post)
