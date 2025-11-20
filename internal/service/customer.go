@@ -44,6 +44,12 @@ func (ref customerServiceImpl) Update(ctx context.Context, customerUpdated *cust
 	if customerUpdated.Birthday != "" {
 		customer.Birthday = customerUpdated.Birthday
 	}
+	if customerUpdated.Email != "" {
+		customer.Email = customerUpdated.Email
+	}
+	if customerUpdated.Phone != "" {
+		customer.Phone = customerUpdated.Phone
+	}
 
 	if err := ref.repository.Update(ctx, customer); err != nil {
 		return err
