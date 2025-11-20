@@ -15,6 +15,7 @@ type CustomerHandler interface {
 
 	AddFavorite(echo.Context) error
 	GetFavorite(echo.Context) error
+	AddService(c echo.Context) error
 }
 
 type handlerImpl struct {
@@ -179,5 +180,6 @@ func (ref handlerImpl) AddService(c echo.Context) error {
 		return c.NoContent(err.Code)
 	}
 
+	log.Debug().Msg("ok")
 	return c.NoContent(http.StatusOK)
 }
