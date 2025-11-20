@@ -1,5 +1,11 @@
 package customer
 
+type ServicesDone struct {
+	ProviderDocument string `json:"provider_document"`
+	ServiceDate      string `json:"service_date"`
+	ReviewID         string `json:"review_id"`
+}
+
 type Customer struct {
 	Document string `json:"document"`
 	Name     string `json:"name"`
@@ -8,5 +14,7 @@ type Customer struct {
 	Email    string `json:"email"`
 	Phone    string `json:"phone"`
 
-	Favorites []string `json:"favorites"` //list of document of favorite providers
+	Favorites []string `json:"favorites"`
+
+	Services []ServicesDone `json:"services_done"`
 }
