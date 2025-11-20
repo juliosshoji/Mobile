@@ -114,3 +114,16 @@ func (ref customerServiceImpl) GetFavorite(ctx context.Context, customerDoc stri
 
 	return &favoriteProviders, nil
 }
+
+func (ref customerServiceImpl) AddService(ctx context.Context, customerDoc string, serviceDone customer.ServicesDone) *echo.HTTPError {
+	customer, err := ref.repository.Get(ctx, customerDoc)
+	if err != nil {
+		return err
+	}
+
+	customer.Services = append(customer.Services, serviceDone)
+	if err := ref.repository.Update(ctx, customer); err != nil {
+		return err
+	}
+	return nil
+}

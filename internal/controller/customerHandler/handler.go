@@ -147,3 +147,37 @@ func (ref handlerImpl) GetFavorite(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, *favorites)
 }
+
+func (ref handlerImpl) AddService(c echo.Context) error {
+	type AddServiceRequest struct {
+		ProviderDocument string `json:"provider_document"`
+		ServiceDate      string `json:"service_date"`
+		ReviewID         string `json:"review_id"`
+	}
+
+	customerId := c.Param("document")
+	var request AddServiceRequest
+	if err := c.Bind(&request); err != nil {
+		log.Error().Err(err).Msg("error binding add service request")
+		if httpErr := err.(*echo.HTTPError); httpErr != nil {
+			return c.NoContent(httpErr.Code)
+		}
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	if request.ProviderDocument == "" || customerId == "" || request.ServiceDate == "" {
+		log.Error().Msg("parameters are incomplete (customer: " + customerId + ") (provider: " + request.ProviderDocument + ")")
+		return c.NoContent(http.StatusBadRequest)
+	}
+
+	if err := ref.customerService.AddService(c.Request().Context(), customerId, customer.ServicesDone{
+		ProviderDocument: request.ProviderDocument,
+		ServiceDate:      request.ServiceDate,
+		ReviewID:         request.ReviewID,
+	}); err != nil {
+		log.Err(err.Unwrap()).Msg("error adding service to customer's services done")
+		return c.NoContent(err.Code)
+	}
+
+	return c.NoContent(http.StatusOK)
+}

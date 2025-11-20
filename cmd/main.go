@@ -121,6 +121,7 @@ func DefineRoutes(group *echo.Group, authenticationHandler authenticationHandler
 	customersGroup.DELETE("/:document", customerHandler.Delete)
 	customersGroup.PUT("/favorite/:document", customerHandler.AddFavorite)
 	customersGroup.GET("/favorite/:document", customerHandler.GetFavorite)
+	customersGroup.POST("/service/:document", customerHandler.AddFavorite)
 
 	providersGroup := group.Group("/providers")
 	providersGroup.Use(authMiddleware.AuthorizeMiddleware)
