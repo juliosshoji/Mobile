@@ -83,7 +83,6 @@ func (ref providerRepositoryImpl) GetAll(ctx context.Context) (*[]Provider, *ech
 	}
 
 	allProviders := []Provider{}
-	provider := Provider{}
 	for _, doc := range docRefs {
 		snapshot, err := doc.Get(ctx)
 		if err != nil {
@@ -91,11 +90,11 @@ func (ref providerRepositoryImpl) GetAll(ctx context.Context) (*[]Provider, *ech
 			return nil, &echo.HTTPError{Internal: err, Message: "error getting snapshot from firestore", Code: http.StatusInternalServerError}
 		}
 
+		provider := Provider{}
 		if err := snapshot.DataTo(&provider); err != nil {
 			log.Error().Err(err).Msg("error binding data of provider from firestore")
 			return nil, &echo.HTTPError{Internal: err, Message: "error binding data of provider from firestore", Code: http.StatusInternalServerError}
 		}
-
 		allProviders = append(allProviders, provider)
 	}
 
